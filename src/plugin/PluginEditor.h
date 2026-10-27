@@ -76,6 +76,7 @@ private:
     std::array<BandStrip, 4> bands;
     juce::ToggleButton editCh1, editCh2;
     int editChannel = 0;
+    int shownPresetGeneration = -1;
 
     // Main controls
     Knob amount, attack, release, squashCal, rangeLo, rangeHi, loCut, hiCut, link, focus, wetTrim, mix, output;

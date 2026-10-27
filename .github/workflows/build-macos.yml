@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build tests
         run: |
           cmake -S . -B build -DTONESHAPER_BUILD_PLUGIN=OFF -DCMAKE_BUILD_TYPE=Release
@@ -35,7 +35,7 @@ jobs:
     env:
       ARTEFACTS: build/src/plugin/ToneShaper_artefacts/Release
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Toolchain
         run: |
@@ -84,7 +84,7 @@ jobs:
         run: packaging/package_macos.sh "$ARTEFACTS" dist "${{ steps.version.outputs.version }}"
 
       - name: Upload build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ToneShaper-${{ steps.version.outputs.version }}-macOS
           path: dist/*
@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload validation logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: pluginval-logs
           path: pluginval-logs

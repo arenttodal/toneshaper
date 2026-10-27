@@ -50,7 +50,8 @@ public:
     bool loadPresetFile (const juce::File& file);
     bool savePresetFile (const juce::File& file);
     juce::String getPresetName() const;
-    std::function<void()> onPresetChanged; // message thread
+    /** Increments whenever the preset name changes (any thread); the editor polls it. */
+    int getPresetGeneration() const noexcept { return presetGeneration.load(); }
 
     // "Set" buttons (sections 7.3 and 9.3) --------------------------------------------------
     /** Matches the wet signal's short-term loudness to the input. Returns false without a
@@ -71,6 +72,7 @@ private:
     toneshaper::ToneShaperEngine engine;
     double currentSampleRate = 0.0;
     int currentProgram = 0;
+    std::atomic<int> presetGeneration { 0 };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ToneShaperProcessor)
 };

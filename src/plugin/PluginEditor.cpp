@@ -151,15 +151,6 @@ ToneShaperEditor::ToneShaperEditor (ToneShaperProcessor& p)
     hint.setText ("Drag the numbered handles to shape the target. Double-click to reset.", juce::dontSendNotification);
     addAndMakeVisible (hint);
 
-    processor.onPresetChanged = [safe = juce::Component::SafePointer<ToneShaperEditor> (this)]
-    {
-        juce::MessageManager::callAsync ([safe]
-        {
-            if (safe != nullptr)
-                safe->refreshPresetName();
-        });
-    };
-
     refreshPresetName();
     updateStereoControls();
     updateSoloButtons();
@@ -173,7 +164,6 @@ ToneShaperEditor::ToneShaperEditor (ToneShaperProcessor& p)
 ToneShaperEditor::~ToneShaperEditor()
 {
     stopTimer();
-    processor.onPresetChanged = nullptr;
     setLookAndFeel (nullptr);
 }
 
@@ -285,6 +275,10 @@ void ToneShaperEditor::timerCallback()
     meters.setText (text, juce::dontSendNotification);
 
     sidechainListen.setEnabled (sidechain.getToggleState());
+
+    if (processor.getPresetGeneration() != shownPresetGeneration)
+        refreshPresetName();
+
     updateStereoControls();
     updateSoloButtons();
 }
@@ -293,6 +287,7 @@ void ToneShaperEditor::timerCallback()
 
 void ToneShaperEditor::refreshPresetName()
 {
+    shownPresetGeneration = processor.getPresetGeneration();
     presetButton.setButtonText (processor.getPresetName());
 }
 

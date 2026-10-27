@@ -187,9 +187,7 @@ juce::String ToneShaperProcessor::getPresetName() const
 void ToneShaperProcessor::setPresetName (const juce::String& name)
 {
     state.state.setProperty (presetNameProperty, name, nullptr);
-
-    if (onPresetChanged)
-        onPresetChanged();
+    ++presetGeneration;
 }
 
 bool ToneShaperProcessor::matchWetTrimToInput()
@@ -234,9 +232,7 @@ void ToneShaperProcessor::setStateInformation (const void* data, int sizeInBytes
         if (xml->hasTagName (state.state.getType()))
         {
             state.replaceState (juce::ValueTree::fromXml (*xml));
-
-            if (onPresetChanged)
-                onPresetChanged();
+            ++presetGeneration;
         }
     }
 }
