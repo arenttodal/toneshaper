@@ -57,18 +57,28 @@ private:
     float binHz = 1.0f, log2F0 = 0.0f;
 };
 
-/** Gaussian smoothing on the log grid. The kernel is renormalised at the grid edges so the
-    ends are not pulled towards zero. */
+/** Gaussian smoothing on the log grid. */
 class GridSmoother
 {
 public:
-    void prepare (int gridSize, float sigmaPoints);
+    enum class Edges
+    {
+        /** Renormalise the kernel to the taps inside the grid. Fine for data centred on zero. */
+        renormalise,
+
+        /** Extend the data by point reflection about each end value. Linear slopes pass through
+            unchanged, so a falling spectrum's broad trend isn't bent upwards near Nyquist. */
+        pointReflect
+    };
+
+    void prepare (int gridSize, float sigmaPoints, Edges edgeMode = Edges::renormalise);
     void process (const float* in, float* out) const noexcept;
 
 private:
     std::vector<float> kernel; // one side, kernel[0] is the centre tap
-    std::vector<float> norm;   // 1 / sum of the taps that fall inside the grid, per point
+    std::vector<float> norm;   // 1 / sum of the taps used, per point
     int halfWidth = 0, size = 0;
+    Edges edges = Edges::renormalise;
 };
 
 } // namespace toneshaper

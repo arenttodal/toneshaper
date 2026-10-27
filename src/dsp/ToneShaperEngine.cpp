@@ -33,6 +33,7 @@ void ToneShaperEngine::prepare (double sr, int /*maxBlockSize*/)
     displayInterval = std::max (1, (int) (sr / 60.0));
 
     activeQualityIndex = -1;
+    prepared = true;
     reset();
 }
 
@@ -94,6 +95,9 @@ void ToneShaperEngine::updateFilters (const EngineParams& p) noexcept
 void ToneShaperEngine::process (float* const* io, int numChannels, const float* const* sidechain,
                                 int numSidechainChannels, int numSamples, const EngineParams& p) noexcept
 {
+    if (! prepared)
+        return;
+
     numChannels = std::clamp (numChannels, 1, maxChannels);
 
     const int q = (int) p.quality;

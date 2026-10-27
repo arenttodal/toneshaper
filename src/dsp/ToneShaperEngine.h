@@ -80,6 +80,7 @@ private:
     static constexpr int chunkSize = 512;
 
     double sampleRate = 48000.0;
+    bool prepared = false;
     std::array<SpectralCore, 3> cores; // indexed by mapping::Quality
     int activeQualityIndex = -1;
 

@@ -53,9 +53,9 @@ void SpectralCore::prepare (double sr, int fftSize, bool minimumPhaseOnly)
 
     const auto ppo = (float) gridPointsPerOctave;
     envelopeSmoother.prepare (gridSize, envelopeSigmaOct * ppo);
-    trendSmoother.prepare (gridSize, trendSigmaOct * ppo);
+    trendSmoother.prepare (gridSize, trendSigmaOct * ppo, GridSmoother::Edges::pointReflect);
     gainSmoother.prepare (gridSize, gainSigmaOct * ppo);
-    heavySmoother.prepare (gridSize, heavySigmaOct * ppo);
+    heavySmoother.prepare (gridSize, heavySigmaOct * ppo, GridSmoother::Edges::pointReflect);
 
     // Periodic Hann for analysis and synthesis: Hann^2 at 75 % overlap sums to exactly 1.5,
     // so the overlap-add is perfectly flat (COLA). The symmetric (N-1) form is not.

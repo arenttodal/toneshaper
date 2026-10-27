@@ -126,6 +126,12 @@ inline int fftSizeFor (Quality q, double sampleRate) noexcept
     return base * factor;
 }
 
+/** Plugin latency for a quality mode: one full FFT frame (see SpectralCore::getLatency()). */
+inline int latencySamplesFor (Quality q, double sampleRate) noexcept
+{
+    return fftSizeFor (q, sampleRate);
+}
+
 /** IEC 61672 A-weighting in dB. */
 inline float aWeightingDb (float f) noexcept
 {

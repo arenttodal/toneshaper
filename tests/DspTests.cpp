@@ -460,6 +460,40 @@ void testToneControls()
            "level mapping");
 }
 
+void testSlopedSpectrum()
+{
+    // Real programme material falls with frequency. A smooth slope is tonal balance, not a
+    // resonance: the correction must stay flat, including near the grid edges.
+    const double fs = 48000.0;
+    auto x = whiteNoise ((int) fs * 3, 0.5f, 17);
+    float lp = 0.0f;
+
+    for (auto& v : x)
+        v = lp = 0.96f * lp + 0.04f * v; // one-pole low-pass, -6 dB/oct above ~300 Hz
+
+    EngineParams p;
+    p.amount = 7.0f;
+    std::vector<float> curve;
+    const LogGrid* grid = nullptr;
+    convergedGainAt (x, fs, p, 1000.0f, &curve, &grid);
+
+    float worst = 0.0f, worstHz = 0.0f;
+
+    for (int g = 0; g < grid->size(); ++g)
+    {
+        const float f = grid->frequency (g);
+
+        if (f >= 60.0f && f <= 18000.0f && std::abs (curve[(size_t) g]) > std::abs (worst))
+        {
+            worst = curve[(size_t) g];
+            worstHz = f;
+        }
+    }
+
+    std::printf ("    largest correction on a -6 dB/oct slope: %.2f dB at %.0f Hz\n", worst, worstHz);
+    CHECK (std::abs (worst) < 2.0f, "smooth slope should not be corrected (%.2f dB at %.0f Hz)", worst, worstHz);
+}
+
 void testTemporalSmoothing()
 {
     // Coefficient maths: after tau seconds the follower reaches 63.2 % of a step.
@@ -979,6 +1013,7 @@ int main()
         { "Spectral envelope", testEnvelope },
         { "Resonance produces a local cut", testResonanceGain },
         { "Tone controls", testToneControls },
+        { "Sloped spectrum is left alone", testSlopedSpectrum },
         { "Temporal smoothing", testTemporalSmoothing },
         { "Noise integration", testNoiseIntegration },
         { "Latency and null test", testLatencyAndNull },

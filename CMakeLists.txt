@@ -11,6 +11,7 @@ endif()
 
 option(TONESHAPER_BUILD_PLUGIN "Build the JUCE plugin (AU / VST3 / Standalone)" ON)
 option(TONESHAPER_BUILD_TESTS "Build the DSP test suite" ON)
+option(TONESHAPER_BUILD_DEV_TOOLS "Build developer tools (UI snapshot renderer)" OFF)
 
 # ---------------------------------------------------------------------------
 # DSP core: plain C++17 + PFFFT, no framework dependency.
@@ -55,4 +56,21 @@ if(TONESHAPER_BUILD_PLUGIN)
     FetchContent_MakeAvailable(JUCE)
 
     add_subdirectory(src/plugin)
+
+    if(TONESHAPER_BUILD_DEV_TOOLS)
+        # Compiles the plugin sources into a plain GUI-capable executable.
+        juce_add_console_app(toneshaper_ui_snapshot PRODUCT_NAME "ToneShaperSnapshot")
+        target_sources(toneshaper_ui_snapshot PRIVATE
+            tools/UiSnapshot.cpp
+            src/plugin/Parameters.cpp
+            src/plugin/Presets.cpp
+            src/plugin/PluginProcessor.cpp
+            src/plugin/PluginEditor.cpp
+            src/plugin/SpectrumDisplay.cpp
+            src/plugin/LookAndFeel.cpp)
+        target_include_directories(toneshaper_ui_snapshot PRIVATE src/plugin)
+        target_compile_definitions(toneshaper_ui_snapshot PRIVATE
+            JucePlugin_Name="ToneShaper" JUCE_WEB_BROWSER=0 JUCE_USE_CURL=0)
+        target_link_libraries(toneshaper_ui_snapshot PRIVATE toneshaper_dsp juce::juce_audio_utils)
+    endif()
 endif()

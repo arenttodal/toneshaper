@@ -133,9 +133,10 @@ float LogGrid::weightedMean (const float* grid, const float* weights) const noex
     return wsum > 0.0f ? sum / wsum : 0.0f;
 }
 
-void GridSmoother::prepare (int gridSize, float sigmaPoints)
+void GridSmoother::prepare (int gridSize, float sigmaPoints, Edges edgeMode)
 {
     size = gridSize;
+    edges = edgeMode;
     sigmaPoints = std::max (sigmaPoints, 0.25f);
     halfWidth = std::max (1, (int) std::ceil (3.0f * sigmaPoints));
 
@@ -151,7 +152,7 @@ void GridSmoother::prepare (int gridSize, float sigmaPoints)
         float s = 0.0f;
 
         for (int d = -halfWidth; d <= halfWidth; ++d)
-            if (i + d >= 0 && i + d < size)
+            if (edges == Edges::pointReflect || (i + d >= 0 && i + d < size))
                 s += kernel[(size_t) std::abs (d)];
 
         norm[(size_t) i] = 1.0f / s;
@@ -160,14 +161,36 @@ void GridSmoother::prepare (int gridSize, float sigmaPoints)
 
 void GridSmoother::process (const float* in, float* out) const noexcept
 {
+    const int last = size - 1;
+
     for (int i = 0; i < size; ++i)
     {
-        const int lo = std::max (0, i - halfWidth);
-        const int hi = std::min (size - 1, i + halfWidth);
         float s = 0.0f;
 
-        for (int j = lo; j <= hi; ++j)
-            s += kernel[(size_t) std::abs (j - i)] * in[j];
+        if (edges == Edges::renormalise || (i - halfWidth >= 0 && i + halfWidth <= last))
+        {
+            const int lo = std::max (0, i - halfWidth);
+            const int hi = std::min (last, i + halfWidth);
+
+            for (int j = lo; j <= hi; ++j)
+                s += kernel[(size_t) std::abs (j - i)] * in[j];
+        }
+        else
+        {
+            for (int j = i - halfWidth; j <= i + halfWidth; ++j)
+            {
+                float v;
+
+                if (j < 0)
+                    v = 2.0f * in[0] - in[std::min (-j, last)];
+                else if (j > last)
+                    v = 2.0f * in[last] - in[std::max (2 * last - j, 0)];
+                else
+                    v = in[j];
+
+                s += kernel[(size_t) std::abs (j - i)] * v;
+            }
+        }
 
         out[i] = s * norm[(size_t) i];
     }
