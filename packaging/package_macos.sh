@@ -11,6 +11,7 @@ NAME="ToneShaper-${VERSION}-macOS"
 
 rm -rf "$OUT"
 mkdir -p "$OUT"
+OUT="$(cd "$OUT" && pwd)" # later steps change directory
 WORK="$(mktemp -d)"
 
 AU="$ARTEFACTS/AU/ToneShaper.component"
